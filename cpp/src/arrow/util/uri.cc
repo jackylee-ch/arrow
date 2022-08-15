@@ -228,6 +228,8 @@ Result<std::vector<std::pair<std::string, std::string>>> Uri::query_items() cons
   return items;
 }
 
+std::string Uri::fragment() const { return TextRangeToString(impl_->uri_.fragment); }
+
 const std::string& Uri::ToString() const { return impl_->string_rep_; }
 
 Status Uri::Parse(const std::string& uri_string) {

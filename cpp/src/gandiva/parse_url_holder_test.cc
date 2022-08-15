@@ -99,19 +99,28 @@ namespace gandiva {
     EXPECT_EQ(out_length, 8);
     EXPECT_EQ(ret7_as_str, "userinfo");
 
-    // Invalid part
-    part_string = "HOST_AND_PORT";
+    // FRAGMENT
+    part_string = "REF";
     const char *ret8 = parse_url(
         &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
         part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
-    EXPECT_EQ(ret8, nullptr);
+    std::string ret8_as_str(ret8, out_length);
+    EXPECT_EQ(out_length, 8);
+    EXPECT_EQ(ret8_as_str, "fragment");
 
-    // Invalid url
-    input_string = "abc-abc";
+    // Invalid part
+    part_string = "HOST_AND_PORT";
     const char *ret9 = parse_url(
         &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
         part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
     EXPECT_EQ(ret9, nullptr);
+
+    // Invalid url
+    input_string = "abc-abc";
+    const char *ret10 = parse_url(
+        &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
+        part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
+    EXPECT_EQ(ret10, nullptr);
   }
 
   TEST_F(TestParseUrlHolder, TestParseUrlWithQueryPattern) {

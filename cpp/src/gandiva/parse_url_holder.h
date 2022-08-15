@@ -75,6 +75,8 @@ namespace gandiva {
         }
       } else if (part_string == "USERINFO") {
         out = uri.user_info();
+      } else if (part_string == "REF") {
+        out = uri.fragment();
       } else {
         return nullptr;
       }
