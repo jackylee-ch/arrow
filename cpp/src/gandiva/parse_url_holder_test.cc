@@ -87,7 +87,7 @@ namespace gandiva {
         &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
         part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
     std::string ret6_as_str(ret6, out_length);
-    EXPECT_EQ(out_length, 21);
+    EXPECT_EQ(out_length, 30);
     EXPECT_EQ(ret6_as_str, "userinfo@arrow.apache.org:8080");
 
     // USERINFO
