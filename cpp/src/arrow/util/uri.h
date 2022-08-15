@@ -85,7 +85,7 @@ class ARROW_EXPORT Uri {
   /// and a missing value, such in "a&b=1" vs. "a=&b=1".
   Result<std::vector<std::pair<std::string, std::string>>> query_items() const;
 
-  /// The URI query string
+  /// The URI fragment string
   std::string fragment() const;
 
   /// Get the string representation of this URI.
