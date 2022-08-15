@@ -145,6 +145,8 @@ bool Uri::has_port() const { return IsTextRangeSet(impl_->uri_.portText); }
 
 int32_t Uri::port() const { return impl_->port_; }
 
+bool Uri::has_user_info() const { return IsTextRangeSet(impl_->uri_.userInfo); }
+
 std::string Uri::user_info() const { return TextRangeToString(impl_->uri_.userInfo); }
 
 std::string Uri::username() const {

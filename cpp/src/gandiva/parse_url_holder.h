@@ -68,10 +68,13 @@ namespace gandiva {
           out = uri.path();
         }
       } else if (part_string == "AUTHORITY") {
-        if (uri.has_port()) {
-          out = uri.host() + ":" + uri.port_text();
+        if (uri.has_user_info()) {
+          out = uri.user_info() + "@" + uri.host();
         } else {
           out = uri.host();
+        }
+        if (uri.has_port()) {
+          out = out + ":" + uri.port_text();
         }
       } else if (part_string == "USERINFO") {
         out = uri.user_info();
@@ -82,10 +85,10 @@ namespace gandiva {
       }
 
       *out_length = static_cast<int32_t>(out.length());
-      if (*out_length == 0) {
+      // consistent with vanilla spark
+      if (*out_length == 0 && (part_string == "QUERY" || part_string == "REF")) {
         return nullptr;
       }
-
       char *result_buffer = reinterpret_cast<char *>(ctx->arena()->Allocate(*out_length));
       if (result_buffer == NULLPTR) {
         ctx->set_error_msg("Could not allocate memory for result! Wrong result may be returned!");
@@ -129,10 +132,6 @@ namespace gandiva {
         out = out_query->second;
 
         *out_length = static_cast<int32_t>(out.length());
-        if (*out_length == 0) {
-          return nullptr;
-        }
-
         char *result_buffer = reinterpret_cast<char *>(ctx->arena()->Allocate(*out_length));
         if (result_buffer == NULLPTR) {
           ctx->set_error_msg("Could not allocate memory for result! Wrong result may be returned!");

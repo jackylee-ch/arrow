@@ -33,7 +33,7 @@ namespace gandiva {
     std::shared_ptr<ParseUrlHolder> part_url_holder;
     auto status = ParseUrlHolder::Make(&part_url_holder);
     auto &parse_url = * part_url_holder;
-    std::string input_string = "https://userinfo@arrow.apache.org:8080/path?query=1";
+    std::string input_string = "https://userinfo@arrow.apache.org:8080/path?query=1#fragment";
     int32_t out_length = 0;
 
     // HOST
@@ -88,7 +88,7 @@ namespace gandiva {
         part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
     std::string ret6_as_str(ret6, out_length);
     EXPECT_EQ(out_length, 21);
-    EXPECT_EQ(ret6_as_str, "arrow.apache.org:8080");
+    EXPECT_EQ(ret6_as_str, "userinfo@arrow.apache.org:8080");
 
     // USERINFO
     part_string = "USERINFO";
@@ -99,7 +99,7 @@ namespace gandiva {
     EXPECT_EQ(out_length, 8);
     EXPECT_EQ(ret7_as_str, "userinfo");
 
-    // FRAGMENT
+    // REF
     part_string = "REF";
     const char *ret8 = parse_url(
         &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),

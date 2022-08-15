@@ -62,6 +62,8 @@ class ARROW_EXPORT Uri {
   /// number component.
   int32_t port() const;
 
+  /// Whether the URI has an userInfo.
+  bool has_user_info() const;
   /// The userInfo specified in the URI.
   std::string user_info() const;
   /// The username specified in the URI.
