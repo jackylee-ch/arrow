@@ -78,6 +78,9 @@ const char* gdv_fn_parse_url_utf8_utf8_utf8(
     const char* part, int32_t part_len, bool in2_valid,
     const char* pattern, int32_t pattern_len, bool in3_valid, bool* out_valid, int32_t* out_length);
 
+const char* gdv_fn_substr_index_utf8_utf8_int32(int64_t ptr, int64_t holder_ptr, const char* input, int in_len,
+                                                const char* delim, int delim_len, int count, int32_t* out_len);
+
 int64_t gdv_fn_to_date_utf8_utf8_int32(int64_t context, int64_t ptr, const char* data,
                                        int data_len, bool in1_validity,
                                        const char* pattern, int pattern_len,
