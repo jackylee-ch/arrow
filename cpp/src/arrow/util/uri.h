@@ -85,6 +85,8 @@ class ARROW_EXPORT Uri {
   /// and a missing value, such in "a&b=1" vs. "a=&b=1".
   Result<std::vector<std::pair<std::string, std::string>>> query_items() const;
 
+  /// Whether the URI has an explicit fragment.
+  bool has_fragment() const;
   /// The URI fragment string
   std::string fragment() const;
 

@@ -230,6 +230,8 @@ Result<std::vector<std::pair<std::string, std::string>>> Uri::query_items() cons
   return items;
 }
 
+bool Uri::has_fragment() const { return IsTextRangeSet(impl_->uri_.fragment); }
+
 std::string Uri::fragment() const { return TextRangeToString(impl_->uri_.fragment); }
 
 const std::string& Uri::ToString() const { return impl_->string_rep_; }

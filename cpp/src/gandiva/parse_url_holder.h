@@ -18,6 +18,7 @@
 #pragma once
 
 #include <memory>
+#include <re2/re2.h>
 #include <string>
 #include <unordered_map>
 
@@ -58,7 +59,12 @@ namespace gandiva {
       } else if (part_string == "PATH") {
         out = uri.path();
       } else if (part_string == "QUERY") {
-        out = uri.query_string();
+        // consistent with vanilla spark
+        if (uri.has_query()) {
+          out = uri.query_string();
+        }  else {
+          return nullptr;
+        }
       } else if (part_string == "PROTOCOL") {
         out = uri.scheme();
       } else if (part_string == "FILE") {
@@ -79,16 +85,17 @@ namespace gandiva {
       } else if (part_string == "USERINFO") {
         out = uri.user_info();
       } else if (part_string == "REF") {
-        out = uri.fragment();
+        // consistent with vanilla spark
+        if (uri.has_fragment()) {
+          out = uri.fragment();
+        } else {
+          return nullptr;
+        }
       } else {
         return nullptr;
       }
 
       *out_length = static_cast<int32_t>(out.length());
-      // consistent with vanilla spark
-      if (*out_length == 0 && (part_string == "QUERY" || part_string == "REF")) {
-        return nullptr;
-      }
       char *result_buffer = reinterpret_cast<char *>(ctx->arena()->Allocate(*out_length));
       if (result_buffer == NULLPTR) {
         ctx->set_error_msg("Could not allocate memory for result! Wrong result may be returned!");
@@ -100,7 +107,6 @@ namespace gandiva {
       return result_buffer;
     }
 
-    // We only support plain pattern string here.
     const char * operator()(
         ExecutionContext *ctx, const char * url, int32_t url_len,
         const char * part, int32_t part_len,
@@ -119,17 +125,19 @@ namespace gandiva {
       if (part_string != "QUERY" || !uri.has_query()) {
         return nullptr;
       } else {
-        std::unordered_map<std::string, std::string> queries;
-        const auto items = std::move(uri.query_items()).ValueUnsafe();
-        for (const auto& query : items) {
-          queries.emplace(query.first, query.second);
+        RE2 re2("(&|^)" + pattern_string + "=([^&]*)");
+        int groups_num = re2.NumberOfCapturingGroups();
+        RE2::Arg *args[groups_num];
+        for (int i = 0; i < groups_num; i++) {
+          args[i] = new RE2::Arg;
         }
-
-        auto out_query = queries.find(pattern_string);
-        if (out_query == queries.end()) {
+        *(args[1]) = &out;
+        // Use re2 instead of pattern_ for better performance.
+        bool matched = RE2::PartialMatchN(uri.query_string(), re2, args, groups_num);
+        if (!matched) {
+          *out_length = 0;
           return nullptr;
         }
-        out = out_query->second;
 
         *out_length = static_cast<int32_t>(out.length());
         char *result_buffer = reinterpret_cast<char *>(ctx->arena()->Allocate(*out_length));

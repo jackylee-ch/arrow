@@ -108,6 +108,22 @@ namespace gandiva {
     EXPECT_EQ(out_length, 8);
     EXPECT_EQ(ret8_as_str, "fragment");
 
+    // REF empty
+    input_string = "http://user:pass@host/?#";
+    const char *ret18 = parse_url(
+        &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
+        part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
+    std::string ret18_as_str(ret18, out_length);
+    EXPECT_EQ(out_length, 0);
+    EXPECT_EQ(ret18_as_str, "");
+
+    // REF not exist
+    input_string = "http://user:pass@host";
+    const char *ret19 = parse_url(
+        &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
+        part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
+    EXPECT_EQ(ret19, nullptr);
+
     // Invalid part
     part_string = "HOST_AND_PORT";
     const char *ret9 = parse_url(
@@ -149,6 +165,17 @@ namespace gandiva {
     std::string ret2_as_str(ret2, out_length);
     EXPECT_EQ(out_length, 3);
     EXPECT_EQ(ret2_as_str, "1_1");
+
+    // Test encoded query
+    input_string = "https://use%20r:pas%20s@example.com/dir%20/pa%20th.HTML?query=x%20y&q2=2#Ref%20two";
+    query_string = "query";
+    const char *ret13 = parse_url(
+        &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
+        part_string.c_str(), static_cast<int32_t>(part_string.length()),
+        query_string.c_str(), static_cast<int32_t>(query_string.length()), &out_length);
+    std::string ret13_as_str(ret13, out_length);
+    EXPECT_EQ(out_length, 5);
+    EXPECT_EQ(ret13_as_str, "x%20y");
 
     // Invalid pattern
     query_string = "query_pattern";
