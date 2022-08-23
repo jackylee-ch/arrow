@@ -137,6 +137,15 @@ namespace gandiva {
         &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
         part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
     EXPECT_EQ(ret10, nullptr);
+
+    // Special url
+    input_string = "/?a=abc";
+    const char *ret11 = parse_url(
+        &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
+        part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
+    std::string ret11_as_str(ret11, out_length);
+    EXPECT_EQ(out_length, 5);
+    EXPECT_EQ(ret11_as_str, "a=abc");
   }
 
   TEST_F(TestParseUrlHolder, TestParseUrlWithQueryPattern) {
@@ -184,5 +193,16 @@ namespace gandiva {
         part_string.c_str(), static_cast<int32_t>(part_string.length()),
         query_string.c_str(), static_cast<int32_t>(query_string.length()), &out_length);
     EXPECT_EQ(ret3, nullptr);
+
+    // Special url
+    input_string = "/?a=abc";
+    query_string = "a";
+    const char *ret4 = parse_url(
+        &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
+        part_string.c_str(), static_cast<int32_t>(part_string.length()),
+        query_string.c_str(), static_cast<int32_t>(query_string.length()), &out_length);
+    std::string ret4_as_str(ret4, out_length);
+    EXPECT_EQ(out_length, 3);
+    EXPECT_EQ(ret4_as_str, "abc");
   }
 }  // namespace gandiva

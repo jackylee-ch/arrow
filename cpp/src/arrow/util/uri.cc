@@ -248,9 +248,10 @@ Status Uri::Parse(const std::string& uri_string) {
   }
 
   const auto scheme = TextRangeToView(impl_->uri_.scheme);
-  if (scheme.empty()) {
-    return Status::Invalid("URI has empty scheme: '", uri_string, "'");
-  }
+  // consistent with vanilla spark
+//  if (scheme.empty()) {
+//    return Status::Invalid("URI has empty scheme: '", uri_string, "'");
+//  }
   impl_->is_file_uri_ = (scheme == "file");
 
   // Gather path segments
