@@ -140,6 +140,7 @@ namespace gandiva {
 
     // Special url
     input_string = "/?a=abc";
+    part_string = "QUERY";
     const char *ret11 = parse_url(
         &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),
         part_string.c_str(), static_cast<int32_t>(part_string.length()), &out_length);
@@ -195,7 +196,7 @@ namespace gandiva {
     EXPECT_EQ(ret3, nullptr);
 
     // Special url
-    input_string = "/?a=abc";
+    input_string = "/?c=测试&a=abc";
     query_string = "a";
     const char *ret4 = parse_url(
         &execution_context_, input_string.c_str(), static_cast<int32_t>(input_string.length()),

@@ -49,6 +49,24 @@ namespace gandiva {
       arrow::internal::Uri uri;
       std::string out;
 
+      // Here we skip the query parsing, as urlparser does not support invalid characters in url,
+      // which is actually supported in vanilla Spark.
+      std::string::size_type start_query_position = url_string.find_first_of("?");
+      std::string query_string;
+      if (start_query_position != url_string.npos) {
+        std::string::size_type end_query_position = url_string.find_last_of("#");
+        if (end_query_position != url_string.npos) {
+          query_string =
+              url_string.substr(start_query_position + 1, end_query_position - start_query_position -1);
+          url_string = url_string.replace(
+              start_query_position + 1, end_query_position - start_query_position - 1, "query=query");
+        } else {
+          query_string =
+              url_string.substr(start_query_position + 1, url_len - start_query_position -1);
+          url_string = url_string.replace(
+              start_query_position + 1, url_len - start_query_position - 1, "query=query");
+        }
+      }
       auto status = uri.Parse(url_string);
       if (!status.ok()) {
         return nullptr;
@@ -61,7 +79,7 @@ namespace gandiva {
       } else if (part_string == "QUERY") {
         // consistent with vanilla spark
         if (uri.has_query()) {
-          out = uri.query_string();
+          out = query_string;
         }  else {
           return nullptr;
         }
@@ -69,7 +87,7 @@ namespace gandiva {
         out = uri.scheme();
       } else if (part_string == "FILE") {
         if (uri.has_query()) {
-          out = uri.path() + "?" + uri.query_string();
+          out = uri.path() + "?" + query_string;
         } else {
           out = uri.path();
         }
@@ -117,6 +135,24 @@ namespace gandiva {
       arrow::internal::Uri uri;
       std::string out;
 
+      // Here we skip the query parsing, as urlparser does not support invalid character in url,
+      // which is actually supported in vanilla Spark.
+      std::string::size_type start_query_position = url_string.find_first_of("?");
+      std::string query_string;
+      if (start_query_position != url_string.npos) {
+        std::string::size_type end_query_position = url_string.find_last_of("#");
+        if (end_query_position != url_string.npos) {
+          query_string =
+              url_string.substr(start_query_position + 1, end_query_position - start_query_position -1);
+          url_string = url_string.replace(
+              start_query_position + 1, end_query_position - start_query_position - 1, "query=query");
+        } else {
+          query_string =
+              url_string.substr(start_query_position + 1, url_len - start_query_position -1);
+          url_string = url_string.replace(
+              start_query_position + 1, url_len - start_query_position - 1, "query=query");
+        }
+      }
       auto status = uri.Parse(url_string);
       if (!status.ok()) {
         return nullptr;
@@ -133,7 +169,7 @@ namespace gandiva {
         }
         *(args[1]) = &out;
         // Use re2 instead of pattern_ for better performance.
-        bool matched = RE2::PartialMatchN(uri.query_string(), re2, args, groups_num);
+        bool matched = RE2::PartialMatchN(query_string, re2, args, groups_num);
         if (!matched) {
           *out_length = 0;
           return nullptr;
