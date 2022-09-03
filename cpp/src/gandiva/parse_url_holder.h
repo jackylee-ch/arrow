@@ -24,6 +24,7 @@
 
 #include "arrow/status.h"
 #include "arrow/util/uri.h"
+#include "arrow/util/string_view.h"
 #include "gandiva/execution_context.h"
 #include "gandiva/function_holder.h"
 #include "gandiva/node.h"
@@ -44,9 +45,9 @@ namespace gandiva {
     const char * operator()(
         ExecutionContext *ctx, const char * url, int32_t url_len,
         const char * part, int32_t part_len, int32_t *out_length) {
-      std::string part_string(part, part_len);
+      auto part_string = arrow::util::string_view(part, part_len);
       arrow::internal::Uri uri;
-      std::string out;
+      arrow::util::string_view out;
 
       // Here we skip the query parsing, as urlparser does not support invalid characters in url,
       // which are actually supported in vanilla Spark, except spaces.
@@ -78,11 +79,11 @@ namespace gandiva {
         // consistent with vanilla spark
         if (query_start_idx != -1) {
           if (fragment_start_idx != -1) {
-            std::string query_string(url + query_start_idx + 1, fragment_start_idx - query_start_idx - 1);
-            out = query_string;
+            out = arrow::util::string_view(
+                url + query_start_idx + 1, fragment_start_idx - query_start_idx - 1);
           } else {
-            std::string query_string(url + query_start_idx + 1, url_len - query_start_idx - 1);
-            out = query_string;
+            out = arrow::util::string_view(
+                url + query_start_idx + 1, url_len - query_start_idx - 1);
           }
         }  else {
           return nullptr;
@@ -91,32 +92,34 @@ namespace gandiva {
         out = uri.scheme();
       } else if (part_string == "FILE") {
         if (query_start_idx != -1) {
+          int32_t file_start_idx = query_start_idx - uri.path().length();
           if (fragment_start_idx != -1) {
-            std::string query_string(url + query_start_idx + 1, fragment_start_idx - query_start_idx - 1);
-            out = uri.path() + "?" + query_string;
+            out = arrow::util::string_view(
+                url + file_start_idx, fragment_start_idx - file_start_idx);
           } else {
-            std::string query_string(url + query_start_idx + 1, url_len - query_start_idx - 1);
-            out = uri.path() + "?" + query_string;
+            out = arrow::util::string_view(
+                url + file_start_idx, url_len - file_start_idx);
           }
         } else {
           out = uri.path();
         }
       } else if (part_string == "AUTHORITY") {
-        if (uri.has_user_info()) {
+        if (uri.has_user_info() && uri.has_port()) {
+          out = uri.user_info() + "@" + uri.host() + ":" + uri.port_text();
+        } else if (uri.has_user_info()){
           out = uri.user_info() + "@" + uri.host();
+        } else if (uri.has_port()) {
+          out = uri.host() + ":" + uri.port_text();
         } else {
           out = uri.host();
-        }
-        if (uri.has_port()) {
-          out = out + ":" + uri.port_text();
         }
       } else if (part_string == "USERINFO") {
         out = uri.user_info();
       } else if (part_string == "REF") {
         // consistent with vanilla spark
         if (fragment_start_idx != -1) {
-          std::string fragment_string(url + fragment_start_idx + 1, url_len - fragment_start_idx -1);
-          out = fragment_string;
+          out = arrow::util::string_view(
+              url + fragment_start_idx + 1, url_len - fragment_start_idx -1);
         } else {
           return nullptr;
         }
@@ -125,6 +128,10 @@ namespace gandiva {
       }
 
       *out_length = static_cast<int32_t>(out.length());
+      if (*out_length == 0) {
+        return "";
+      }
+
       char *result_buffer = reinterpret_cast<char *>(ctx->arena()->Allocate(*out_length));
       if (result_buffer == NULLPTR) {
         ctx->set_error_msg("Could not allocate memory for result! Wrong result may be returned!");
@@ -140,8 +147,8 @@ namespace gandiva {
         ExecutionContext *ctx, const char * url, int32_t url_len,
         const char * part, int32_t part_len,
         const char * pattern, int32_t pattern_len, int32_t *out_length) {
-      std::string part_string(part, part_len);
-      std::string pattern_string(pattern, pattern_len);
+      auto part_string = arrow::util::string_view(part, part_len);
+      auto pattern_string = arrow::util::string_view(pattern, pattern_len);
       arrow::internal::Uri uri;
       std::string out;
 
@@ -171,7 +178,7 @@ namespace gandiva {
       }
 
       std::string query_string(url + query_start_idx + 1, url_len - query_start_idx - 1);
-      RE2 re2("(&|^)" + pattern_string + "=([^&|^#]*)");
+      RE2 re2("(&|^)" + pattern_string.to_string() + "=([^&|^#]*)");
       int groups_num = re2.NumberOfCapturingGroups();
       RE2::Arg *args[groups_num];
       for (int i = 0; i < groups_num; i++) {
@@ -186,6 +193,10 @@ namespace gandiva {
       }
 
       *out_length = static_cast<int32_t>(out.length());
+      if (*out_length == 0) {
+        return "";
+      }
+
       char *result_buffer = reinterpret_cast<char *>(ctx->arena()->Allocate(*out_length));
       if (result_buffer == NULLPTR) {
         ctx->set_error_msg("Could not allocate memory for result! Wrong result may be returned!");
