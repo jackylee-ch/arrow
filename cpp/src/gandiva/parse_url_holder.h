@@ -50,18 +50,34 @@ namespace gandiva {
       arrow::util::string_view out;
 
       // Here we skip the query parsing, as urlparser does not support invalid characters in url,
-      // which are actually supported in vanilla Spark, except spaces.
+      // which are actually supported in vanilla Spark, except spaces, { and }.
       int32_t query_start_idx = -1;
       int32_t fragment_start_idx = -1;
-      for (int32_t idx = url_len - 1; idx >= 0; idx--) {
-        // consist with vanilla spark
-        if (url[idx] == ' ') {
-          return nullptr;
-        } else if (url[idx] == '?') {
+      for (int32_t idx = 0; idx < url_len; idx++) {
+        if (url[idx] == '?') {
           query_start_idx = idx;
           break;
-        } else if (url[idx] == '#') {
-          fragment_start_idx = idx;
+        }
+      }
+      // check invalid charactor in query
+      if (query_start_idx != -1) {
+        for (int32_t idx = query_start_idx; idx < url_len; idx++) {
+          // consist with vanilla spark
+          if (url[idx] == ' ' || url[idx] == '{' || url[idx] == '}') {
+            return nullptr;
+          } else if (url[idx] == '#') {
+            fragment_start_idx = idx;
+            break;
+          }
+        }
+      }
+      // check invalid charactor in fragment
+      if (fragment_start_idx != -1) {
+        for (int32_t idx = fragment_start_idx; idx < url_len; idx++) {
+          // consist with vanilla spark
+          if (url[idx] == ' ' || url[idx] == '{' || url[idx] == '}' || url[idx] == '#') {
+            return nullptr;
+          }
         }
       }
       int32_t part_url_len = query_start_idx == -1 ? url_len : query_start_idx + 1;
@@ -157,18 +173,40 @@ namespace gandiva {
       }
 
       // Here we skip the query parsing, as urlparser does not support invalid characters in url,
-      // which are actually supported in vanilla Spark, except spaces.
+      // which are actually supported in vanilla Spark, except spaces, { and }.
       int query_start_idx = -1;
-      for (int idx = url_len - 1; idx >= 0; idx--) {
-        if (url[idx] == ' ') {
-          return nullptr;
-        } else if (url[idx] == '?') {
+      int32_t fragment_start_idx = -1;
+      for (int32_t idx = 0; idx < url_len; idx++) {
+        if (url[idx] == '?') {
           query_start_idx = idx;
           break;
         }
       }
       if (query_start_idx == -1) {
         return nullptr;
+      }
+      // check invalid charactor in query
+      if (query_start_idx != -1) {
+        for (int32_t idx = query_start_idx; idx < url_len; idx++) {
+          // consist with vanilla spark
+          if (url[idx] == ' ' || url[idx] == '{' || url[idx] == '}') {
+            return nullptr;
+          } else if (url[idx] == '#') {
+            fragment_start_idx = idx;
+            break;
+          }
+        }
+      }
+      // check invalid charactor in fragment
+      if (fragment_start_idx != -1) {
+        for (int32_t idx = fragment_start_idx; idx < url_len; idx++) {
+          // consist with vanilla spark
+          if (url[idx] == ' ' || url[idx] == '{' || url[idx] == '}' || url[idx] == '#') {
+            return nullptr;
+          }
+        }
+      } else {
+        fragment_start_idx = url_len;
       }
 
       std::string url_string(url, query_start_idx + 1);
@@ -177,7 +215,7 @@ namespace gandiva {
         return nullptr;
       }
 
-      std::string query_string(url + query_start_idx + 1, url_len - query_start_idx - 1);
+      std::string query_string(url + query_start_idx + 1, fragment_start_idx - query_start_idx - 1);
       RE2 re2("(&|^)" + pattern_string.to_string() + "=([^&|^#]*)");
       int groups_num = re2.NumberOfCapturingGroups();
       RE2::Arg *args[groups_num];
