@@ -186,7 +186,8 @@ static util::optional<Expression> ColumnChunkStatisticsAsExpression(
   auto field_expr = field_ref(field->name());
 
   // Optimize for corner case where all values are nulls
-  if (statistics->num_values() == statistics->null_count()) {
+  // num_values is the count of the non-null values, thus we can check num_values only.
+  if (statistics->num_values() == 0) {
     return equal(std::move(field_expr), literal(MakeNullScalar(field->type())));
   }
 
