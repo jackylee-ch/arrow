@@ -73,7 +73,7 @@ namespace gandiva {
       }
       // check invalid charactor in fragment
       if (fragment_start_idx != -1) {
-        for (int32_t idx = fragment_start_idx; idx < url_len; idx++) {
+        for (int32_t idx = fragment_start_idx + 1; idx < url_len; idx++) {
           // consist with vanilla spark
           if (url[idx] == ' ' || url[idx] == '{' || url[idx] == '}' || url[idx] == '#') {
             return nullptr;
@@ -199,7 +199,7 @@ namespace gandiva {
       }
       // check invalid charactor in fragment
       if (fragment_start_idx != -1) {
-        for (int32_t idx = fragment_start_idx; idx < url_len; idx++) {
+        for (int32_t idx = fragment_start_idx + 1; idx < url_len; idx++) {
           // consist with vanilla spark
           if (url[idx] == ' ' || url[idx] == '{' || url[idx] == '}' || url[idx] == '#') {
             return nullptr;
