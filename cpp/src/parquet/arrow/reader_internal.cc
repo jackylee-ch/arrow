@@ -704,7 +704,10 @@ Status TransferColumnData(RecordReader* reader, std::shared_ptr<DataType> value_
     case ::arrow::Type::DATE64:
       RETURN_NOT_OK(TransferDate64(reader, pool, value_type, &result));
       break;
-    case ::arrow::Type::FIXED_SIZE_BINARY:
+    case ::arrow::Type::FIXED_SIZE_BINARY: {
+      RETURN_NOT_OK(TransferBinary(reader, pool, value_type, &chunked_result));
+      result = chunked_result;
+    } break;
     case ::arrow::Type::BINARY:
     case ::arrow::Type::STRING:
     case ::arrow::Type::LARGE_BINARY:

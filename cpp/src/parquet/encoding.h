@@ -321,7 +321,6 @@ class TypedDecoder : virtual public Decoder {
                           int32_t* offset,
                           std::shared_ptr<::arrow::ResizableBuffer> & values,
                           int64_t valid_bits_offset,
-                          typename EncodingTraits<ByteArrayType>::Accumulator* out,
                           int32_t* bianry_length) {
                             return 0;
                           }

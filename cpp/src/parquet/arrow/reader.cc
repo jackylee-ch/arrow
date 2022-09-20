@@ -142,10 +142,6 @@ class FileReaderImpl : public FileReader {
       : pool_(pool),
         reader_(std::move(reader)),
         reader_properties_(std::move(properties)) {}
-  
-  ~FileReaderImpl() {
-     std::cout << "Patch version-0830" << std::endl;
-  }
 
   Status Init() {
     return SchemaManifest::Make(reader_->metadata()->schema(),
