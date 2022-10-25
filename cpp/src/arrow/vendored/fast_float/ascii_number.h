@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include "float_common.h"
+#include "fast_float.h"
 
 namespace arrow_vendored {
 namespace fast_float {

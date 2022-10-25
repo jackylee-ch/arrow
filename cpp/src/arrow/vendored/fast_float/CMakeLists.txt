@@ -15,8 +15,4 @@
 # specific language governing permissions and limitations
 # under the License.
 
-arrow_install_all_headers("arrow/vendored")
-
-add_subdirectory(datetime)
-add_subdirectory(fast_float)
-add_subdirectory(double-conversion)
+arrow_install_all_headers("arrow/vendored/fast_float")
