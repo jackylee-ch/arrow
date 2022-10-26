@@ -141,7 +141,7 @@ class ReservationListenableMemoryPool::Impl {
 class JavaAllocatedBuffer : public Buffer {
  public:
   JavaAllocatedBuffer(JNIEnv* env, jobject cleaner_ref, jmethodID cleaner_method_ref,
-                      uint8_t* buffer, int32_t len)
+                      uint8_t* buffer, int64_t len)
       : Buffer(buffer, len),
         env_(env),
         cleaner_ref_(cleaner_ref),
