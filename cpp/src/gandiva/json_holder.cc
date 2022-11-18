@@ -109,6 +109,7 @@ bool check_char(const char* current_position, int check_index) {
 
 const uint8_t* JsonHolder::operator()(gandiva::ExecutionContext* ctx, const std::string& json_str,
  const std::string& json_path, int32_t* out_len) {
+  if (json_str.size() == 2 && json_str == "{}") return nullptr;
   padded_string padded_input(json_str);
 
   // Just for json string validation. With ondemand api, when a target field is found, the remaining
