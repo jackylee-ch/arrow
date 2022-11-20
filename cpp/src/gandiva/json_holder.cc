@@ -110,6 +110,10 @@ bool check_char(const char* current_position, int check_index) {
 const uint8_t* JsonHolder::operator()(gandiva::ExecutionContext* ctx, const std::string& json_str,
  const std::string& json_path, int32_t* out_len) {
   if (json_str.size() == 2 && json_str == "{}") return nullptr;
+  if (json_path.length() < 3) {
+    return nullptr;
+  }
+
   padded_string padded_input(json_str);
 
   // Just for json string validation. With ondemand api, when a target field is found, the remaining
@@ -130,9 +134,7 @@ const uint8_t* JsonHolder::operator()(gandiva::ExecutionContext* ctx, const std:
   } catch (simdjson_error& e) {
     return nullptr;
   }
-  if (json_path.length() < 3) {
-    return nullptr;
-  }
+
   // Follow spark's format for specifying a field, e.g., "$.a.b".
   char formatted_json_path[json_path.length() + 1];
   int j = 0;
@@ -148,6 +150,7 @@ const uint8_t* JsonHolder::operator()(gandiva::ExecutionContext* ctx, const std:
     }
   }
   formatted_json_path[j] = '\0';
+
   std::string res;
   error_code error;
   try {
