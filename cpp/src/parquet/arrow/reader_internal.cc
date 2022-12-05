@@ -377,7 +377,9 @@ Status TransferInt96(RecordReader* reader, MemoryPool* pool,
       // isn't representable as a 64-bit Unix timestamp.
       *data_ptr++ = 0;
     } else {
-      *data_ptr++ = Int96GetNanoSeconds(values[i]);
+      // Keep the behavior with vanilla spark.
+      // Vanilla spark would parse int96 to micro second.
+      *data_ptr++ = Int96GetNanoSeconds(values[i]) / 1000;
     }
   }
   *out = std::make_shared<TimestampArray>(type, length, std::move(data),
