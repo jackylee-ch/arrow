@@ -79,7 +79,7 @@ public class JniWrapper {
    *                         ID around all written files.
    */
   public native void writeFromScannerToFile(NativeSerializedRecordBatchIterator itr, byte[] schema,
-      long fileFormat, String uri, String[] partitionColumns, int maxPartitions,
+      long fileFormat, String codec, String uri, String[] partitionColumns, int maxPartitions,
       String baseNameTemplate);
 
 

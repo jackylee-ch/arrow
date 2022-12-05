@@ -40,14 +40,14 @@ public class DatasetFileWriter {
    * @param baseNameTemplate file name template used to make partitions. E.g. "dat_{i}", i is current partition
    *                         ID around all written files.
    */
-  public static void write(Scanner scanner, FileFormat format, String uri,
+  public static void write(Scanner scanner, FileFormat format, String codec, String uri,
       String[] partitionColumns, int maxPartitions, String baseNameTemplate) {
     final NativeScannerAdaptorImpl adaptor = new NativeScannerAdaptorImpl(scanner);
     final NativeSerializedRecordBatchIterator itr = adaptor.scan();
     RuntimeException throwableWrapper = null;
     try {
       JniWrapper.get().writeFromScannerToFile(itr, SchemaUtility.serialize(scanner.schema()),
-              format.id(), uri, partitionColumns, maxPartitions, baseNameTemplate);
+              format.id(), codec, uri, partitionColumns, maxPartitions, baseNameTemplate);
     } catch (Throwable t) {
       throwableWrapper = new RuntimeException(t);
       throw throwableWrapper;
@@ -70,6 +70,7 @@ public class DatasetFileWriter {
    * @param uri target file uri
    */
   public static void write(Scanner scanner, FileFormat format, String uri) {
-    write(scanner, format, uri, new String[0], 1024, "dat_{i}");
+    //TODO: default to UNCOMPRESSED
+    write(scanner, format, "snappy", uri, new String[0], 1024, "dat_{i}");
   }
 }

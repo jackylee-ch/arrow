@@ -51,7 +51,6 @@ using parquet::arrow::SchemaField;
 using parquet::arrow::SchemaManifest;
 using parquet::arrow::StatisticsAsScalars;
 
-
 /// \brief A ScanTask backed by a parquet file and a RowGroup within a parquet file.
 class ParquetScanTask : public ScanTask {
  public:
@@ -406,10 +405,21 @@ Result<std::shared_ptr<FileFragment>> ParquetFileFormat::MakeFragment(
 // ParquetFileWriter, ParquetFileWriteOptions
 //
 
+void ParquetFileFormat::SetCodec(std::string codec) {
+  auto maybe_compression = util::Codec::GetCompressionType(codec);
+  if (maybe_compression.ok()) {
+    codec_ = maybe_compression.ValueOrDie();
+  } else {
+    codec = Compression::UNCOMPRESSED;
+  }
+}
+
 std::shared_ptr<FileWriteOptions> ParquetFileFormat::DefaultWriteOptions() {
   std::shared_ptr<ParquetFileWriteOptions> options(
       new ParquetFileWriteOptions(shared_from_this()));
   options->writer_properties = parquet::default_writer_properties();
+  options->writer_properties =
+      parquet::WriterProperties::Builder().compression(codec_)->build();
   options->arrow_writer_properties = parquet::default_arrow_writer_properties();
   return options;
 }
@@ -499,15 +509,16 @@ Status ParquetFileFragment::EnsureCompleteMetadata(parquet::arrow::FileReader* r
           r_start = leading_cc->dictionary_page_offset();
         }
         int64_t r_bytes = 0L;
-        for (int col_id = 0; col_id < parquet_reader->RowGroup(i)
-            ->metadata()->num_columns();
-             col_id++) {
-          r_bytes += parquet_reader->
-              RowGroup(i)->metadata()->ColumnChunk(col_id)->total_compressed_size();
+        for (int col_id = 0;
+             col_id < parquet_reader->RowGroup(i)->metadata()->num_columns(); col_id++) {
+          r_bytes += parquet_reader->RowGroup(i)
+                         ->metadata()
+                         ->ColumnChunk(col_id)
+                         ->total_compressed_size();
         }
         int64_t midpoint = r_start + r_bytes / 2;
-        if (midpoint >= source.start_offset()
-            && midpoint < (source.start_offset() + source.length())) {
+        if (midpoint >= source.start_offset() &&
+            midpoint < (source.start_offset() + source.length())) {
           random_read_selected_row_groups.push_back(i);
         }
       }

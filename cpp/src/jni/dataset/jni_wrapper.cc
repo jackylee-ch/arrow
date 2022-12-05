@@ -728,7 +728,7 @@ Java_org_apache_arrow_dataset_file_JniWrapper_makeFileSystemDatasetFactory(
 JNIEXPORT void JNICALL
 Java_org_apache_arrow_dataset_file_JniWrapper_writeFromScannerToFile(
     JNIEnv* env, jobject, jobject itr, jbyteArray schema_bytes, jlong file_format_id,
-    jstring uri, jobjectArray partition_columns, jint max_partitions,
+    jstring codec, jstring uri, jobjectArray partition_columns, jint max_partitions,
     jstring base_name_template) {
   JNI_METHOD_START
   JavaVM* vm;
@@ -745,6 +745,7 @@ Java_org_apache_arrow_dataset_file_JniWrapper_writeFromScannerToFile(
       arrow::fs::FileSystemFromUri(JStringToCString(env, uri), &output_path));
   std::vector<std::string> partition_column_vector =
       ToStringVector(env, partition_columns);
+  file_format->SetCodec(JStringToCString(env,codec));
   options.file_write_options = file_format->DefaultWriteOptions();
   options.filesystem = filesystem;
   options.base_dir = output_path;

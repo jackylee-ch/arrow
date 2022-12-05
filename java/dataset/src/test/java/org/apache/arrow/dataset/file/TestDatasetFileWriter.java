@@ -86,7 +86,7 @@ public class TestDatasetFileWriter extends TestDataset {
     final File writtenFolder = TMP.newFolder();
     final String writtenParquet = writtenFolder.toURI().toString();
     try {
-      DatasetFileWriter.write(scanner, ParquetFileFormat.createDefault(), writtenParquet, new String[]{"id", "name"}, 100, "dat_{i}");
+      DatasetFileWriter.write(scanner, ParquetFileFormat.createDefault(),"snappy", writtenParquet, new String[]{"id", "name"}, 100, "dat_{i}");
       final Set<String> expectedOutputFiles = new HashSet<>(
           Arrays.asList("id=1/name=a/dat_0", "id=2/name=b/dat_1", "id=3/name=c/dat_2", "id=2/name=d/dat_3"));
       final Set<String> outputFiles = FileUtils.listFiles(writtenFolder, null, true)

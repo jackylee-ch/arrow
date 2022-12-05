@@ -120,6 +120,9 @@ class ARROW_DS_EXPORT ParquetFileFormat : public FileFormat {
       std::shared_ptr<FileWriteOptions> options) const override;
 
   std::shared_ptr<FileWriteOptions> DefaultWriteOptions() override;
+  void SetCodec(std::string codec) override;
+ private:
+  Compression::type codec_;
 };
 
 /// \brief A FileFragment with parquet logic.

@@ -204,6 +204,9 @@ class ARROW_DS_EXPORT FileFormat : public std::enable_shared_from_this<FileForma
 
   /// \brief Get default write options for this format.
   virtual std::shared_ptr<FileWriteOptions> DefaultWriteOptions() = 0;
+
+  virtual void SetCodec(std::string codec) {
+  };
 };
 
 /// \brief A Fragment that is stored in a file with a known format
