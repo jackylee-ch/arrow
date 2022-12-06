@@ -94,14 +94,21 @@ TEST(TestArithmeticOps, TestCompare) {
 }
 
 TEST(TestArithmeticOps, TestDivide) {
-  gandiva::ExecutionContext context;
-  EXPECT_EQ(divide_int64_int64(reinterpret_cast<gdv_int64>(&context), 10, 0), 0);
-  // EXPECT_EQ(context.has_error(), true);
-  // EXPECT_EQ(context.get_error(), "divide by zero error");
+  bool out_valid = false;
+  EXPECT_EQ(divide_int64_int64(10, true, 0, true, &out_valid), 0);
+  EXPECT_EQ(out_valid, false);
 
-  context.Reset();
-  EXPECT_EQ(divide_int64_int64(reinterpret_cast<gdv_int64>(&context), 10, 2), 5);
-  EXPECT_EQ(context.has_error(), false);
+  out_valid = false;
+  EXPECT_EQ(divide_int64_int64(10, true, 0, false, &out_valid), 0);
+  EXPECT_EQ(out_valid, false);
+
+  out_valid = false;
+  EXPECT_EQ(divide_int64_int64(10, false, 0, true, &out_valid), 0);
+  EXPECT_EQ(out_valid, false);
+
+  out_valid = false;
+  EXPECT_EQ(divide_int64_int64(10, true, 2, true, &out_valid), 5);
+  EXPECT_EQ(out_valid, true);
 }
 
 TEST(TestArithmeticOps, TestDiv) {

@@ -380,11 +380,19 @@ NUMERIC_BOOL_DATE_FUNCTION(IS_NOT_DISTINCT_FROM)
 
 #define DIVIDE(TYPE)                                                                     \
   FORCE_INLINE                                                                           \
-  gdv_##TYPE divide_##TYPE##_##TYPE(gdv_int64 context, gdv_##TYPE in1, gdv_##TYPE in2) { \
-    if (in2 == 0) {                                                                      \
-      return static_cast<gdv_##TYPE>(NULL);                                              \
+  gdv_##TYPE divide_##TYPE##_##TYPE(gdv_##TYPE in1, bool in1_valid,                      \
+      gdv_##TYPE in2, bool in2_valid, bool* out_valid) {                                 \
+    if (!in1_valid || !in2_valid) {                                                      \
+      *out_valid = false;                                                                \
+      return static_cast<gdv_##TYPE>(0);                                                 \
     }                                                                                    \
-    return static_cast<gdv_##TYPE>(in1 / in2);                                           \
+    if (static_cast<gdv_##TYPE>(0) == in2) {                                             \
+      *out_valid = false;                                                                \
+      return static_cast<gdv_##TYPE>(0);                                                 \
+    }                                                                                    \
+    gdv_##TYPE res = static_cast<gdv_##TYPE>(in1 / in2);                                 \
+    *out_valid = true;                                                                   \
+    return res;                                                                          \
   }
 
 NUMERIC_FUNCTION(DIVIDE)

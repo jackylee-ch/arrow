@@ -90,7 +90,7 @@ std::vector<NativeFunction> GetArithmeticFunctionRegistry() {
       // add/sub/multiply/divide/mod
       BINARY_SYMMETRIC_FN(add, {}), BINARY_SYMMETRIC_FN(subtract, {}),
       BINARY_SYMMETRIC_FN(multiply, {}),
-      NUMERIC_TYPES(BINARY_SYMMETRIC_UNSAFE_NULL_IF_NULL, divide, {}),
+      NUMERIC_TYPES(BINARY_SYMMETRIC_SAFE_INTERNAL_NULL, divide, {}),
       BINARY_GENERIC_SAFE_NULL_IF_NULL(mod, {"modulo"}, int8, int8, int8),
       BINARY_GENERIC_SAFE_NULL_IF_NULL(mod, {"modulo"}, int16, int16, int16),
       BINARY_GENERIC_SAFE_NULL_IF_NULL(mod, {"modulo"}, int32, int32, int32),
