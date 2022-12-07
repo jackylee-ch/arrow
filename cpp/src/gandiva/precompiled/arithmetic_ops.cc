@@ -62,12 +62,21 @@ extern "C" {
   DATE_TYPES(INNER, NAME, OP)                    \
   INNER(NAME, boolean, OP)
 
-#define MOD_OP(NAME, IN_TYPE1, IN_TYPE2, OUT_TYPE)                      \
-  FORCE_INLINE                                                          \
-  gdv_##OUT_TYPE NAME##_##IN_TYPE1##_##IN_TYPE2(gdv_##IN_TYPE1 left,    \
-                                                gdv_##IN_TYPE2 right) { \
-    return (right == 0 ? static_cast<gdv_##OUT_TYPE>(left)              \
-                       : static_cast<gdv_##OUT_TYPE>(left % right));    \
+#define MOD_OP(TYPE)                                                        \
+  FORCE_INLINE                                                              \
+  gdv_##TYPE mod_##TYPE##_##TYPE(gdv_##TYPE in1, bool in1_valid,            \
+      gdv_##TYPE in2, bool in2_valid, bool* out_valid) {                    \
+    if (!in1_valid || !in2_valid) {                                         \
+      *out_valid = false;                                                   \
+      return static_cast<gdv_##TYPE>(0);                                    \
+    }                                                                       \
+    if (static_cast<gdv_##TYPE>(0) == in2) {                                \
+      *out_valid = false;                                                   \
+      return static_cast<gdv_##TYPE>(0);                                    \
+    }                                                                       \
+    gdv_##TYPE res = static_cast<gdv_##TYPE>(in1 % in2);                    \
+    *out_valid = true;                                                      \
+    return res;                                                             \
   }
 
 // Symmetric binary fns : left, right params and return type are same.
@@ -95,29 +104,32 @@ gdv_boolean isNaN_float32(gdv_float32 val) { return isnan(val) || isinf(val); }
 FORCE_INLINE
 gdv_boolean isNaN_float64(gdv_float64 val) { return isnan(val) || isinf(val); }
 
-MOD_OP(mod, int32, int32, int32)
-MOD_OP(mod, int64, int64, int64)
+MOD_OP(int32)
+MOD_OP(int64)
 
 #undef MOD_OP
 
-gdv_float32 mod_float32_float32(int64_t context, gdv_float32 x, gdv_float32 y) {
-  if (y == 0.0) {
-    // char const* err_msg = "divide by zero error";
-    // gdv_fn_context_set_error_msg(context, err_msg);
-    return 0.0;
+#define MOD_FLOAT(TYPE)                                                     \
+  FORCE_INLINE                                                              \
+  gdv_##TYPE mod_##TYPE##_##TYPE(gdv_##TYPE in1, bool in1_valid,            \
+      gdv_##TYPE in2, bool in2_valid, bool* out_valid) {                    \
+    if (!in1_valid || !in2_valid) {                                         \
+      *out_valid = false;                                                   \
+      return static_cast<gdv_##TYPE>(0.0);                                  \
+    }                                                                       \
+    if (static_cast<gdv_##TYPE>(0.0) == in2) {                              \
+      *out_valid = false;                                                   \
+      return static_cast<gdv_##TYPE>(0.0);                                  \
+    }                                                                       \
+    gdv_##TYPE res = static_cast<gdv_##TYPE>(fmod(in1,in2));                \
+    *out_valid = true;                                                      \
+    return res;                                                             \
   }
-  return fmod(x, y);
-}
 
-gdv_float64 mod_float64_float64(int64_t context, gdv_float64 x, gdv_float64 y) {
-  if (y == 0.0) {
-    // Setting error msg can cause unexpected runtime exception.
-    // char const* err_msg = "divide by zero error";
-    // gdv_fn_context_set_error_msg(context, err_msg);
-    return 0.0;
-  }
-  return fmod(x, y);
-}
+MOD_FLOAT(float32)
+MOD_FLOAT(float64)
+
+#undef MOD_FLOAT
 
 // pmod, return the positive mod.
 #define PMOD(IN_TYPE)                                                               \

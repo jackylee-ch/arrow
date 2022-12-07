@@ -35,30 +35,27 @@ TEST(TestArithmeticOps, TestIsDistinctFrom) {
 }
 
 TEST(TestArithmeticOps, TestMod) {
-  gandiva::ExecutionContext context;
-  EXPECT_EQ(mod_int32_int32(10, 0), 10);
+  bool out_valid = false;
+  EXPECT_EQ(mod_int32_int32(10, true, 0, true, &out_valid), 0);
+  EXPECT_EQ(out_valid, false);
 
   const double acceptable_abs_error = 0.00000000001;  // 1e-10
 
-  EXPECT_DOUBLE_EQ(mod_float64_float64(reinterpret_cast<gdv_int64>(&context), 2.5, 0.0),
-                   0.0);
-  // EXPECT_TRUE(context.has_error());
-  // EXPECT_EQ(context.get_error(), "divide by zero error");
+  out_valid = false;
+  EXPECT_EQ(mod_float32_float32(2.5, true, 0, true, &out_valid), 0);
+  EXPECT_EQ(out_valid, false);
 
-  context.Reset();
-  EXPECT_NEAR(mod_float64_float64(reinterpret_cast<gdv_int64>(&context), 2.5, 1.2), 0.1,
-              acceptable_abs_error);
-  EXPECT_FALSE(context.has_error());
+  out_valid = false;
+  EXPECT_NEAR(mod_float64_float64(2.5, true, 1.2, true, &out_valid), 0.1, acceptable_abs_error);
+  EXPECT_EQ(out_valid, true);
 
-  context.Reset();
-  EXPECT_DOUBLE_EQ(mod_float64_float64(reinterpret_cast<gdv_int64>(&context), 2.5, 2.5),
-                   0.0);
-  EXPECT_FALSE(context.has_error());
+  out_valid = false;
+  EXPECT_DOUBLE_EQ(mod_float64_float64(2.5, true, 2.5, true, &out_valid), 0.0);
+  EXPECT_EQ(out_valid, true);
 
-  context.Reset();
-  EXPECT_NEAR(mod_float64_float64(reinterpret_cast<gdv_int64>(&context), 9.2, 3.7), 1.8,
-              acceptable_abs_error);
-  EXPECT_FALSE(context.has_error());
+  out_valid = false;
+  EXPECT_NEAR(mod_float64_float64(9.2, true, 3.7, true, &out_valid), 1.8, acceptable_abs_error);
+  EXPECT_EQ(out_valid, true);
 }
 
 TEST(TestArithmeticOps, TestPMod) {
