@@ -144,11 +144,11 @@ double months_between_timestamp_timestamp(gdv_uint64, gdv_uint64);
 gdv_int32 mem_compare(const char* left, gdv_int32 left_len, const char* right,
                       gdv_int32 right_len);
 
-gdv_int32 mod_int8_int8(gdv_int8 left, gdv_int8 right);
-gdv_int32 mod_int16_int16(gdv_int16 left, gdv_int16 right);
-gdv_int32 mod_int32_int32(gdv_int32 left, gdv_int32 right);
-gdv_float32 mod_float32_float32(gdv_int64 context, gdv_float32 left, gdv_float32 right);
-gdv_float64 mod_float64_float64(gdv_int64 context, gdv_float64 left, gdv_float64 right);
+gdv_int32 mod_int8_int8(gdv_int8 in1, bool in1_valid, gdv_int8 in2, bool in2_valid, bool* out_valid);
+gdv_int32 mod_int16_int16(gdv_int16 in1, bool in1_valid, gdv_int16 in2, bool in2_valid, bool* out_valid);
+gdv_int32 mod_int32_int32(gdv_int32 in1, bool in1_valid, gdv_int32 in2, bool in2_valid, bool* out_valid);
+gdv_float32 mod_float32_float32(gdv_float32 in1, bool in1_valid, gdv_float32 in2, bool in2_valid, bool* out_valid);
+gdv_float64 mod_float64_float64(gdv_float64 in1, bool in1_valid, gdv_float64 in2, bool in2_valid, bool* out_valid);
 
 gdv_int8 pmod_int8_int8(gdv_int8 in1, bool in1_valid, gdv_int8 in2, bool in2_valid, bool* out_valid);
 gdv_int16 pmod_int16_int16(gdv_int16 in1, bool in1_valid, gdv_int16 in2, bool in2_valid, bool* out_valid);
@@ -160,7 +160,7 @@ gdv_float64 pmod_float64_float64(gdv_float64 in1, bool in1_valid, gdv_float64 in
 bool equal_with_nan_float32_float32(gdv_float32 in1, gdv_float32 in2);
 bool not_equal_with_nan_float32_float32(gdv_float32 in1, gdv_float32 in2);
 
-gdv_int64 divide_int64_int64(gdv_int64 context, gdv_int64 in1, gdv_int64 in2);
+gdv_int64 divide_int64_int64(gdv_int64 in1, bool in1_valid, gdv_int64 in2, bool in2_valid, bool* out_valid);
 
 gdv_int64 div_int64_int64(gdv_int64 context, gdv_int64 in1, gdv_int64 in2);
 gdv_float32 div_float32_float32(gdv_int64 context, gdv_float32 in1, gdv_float32 in2);
