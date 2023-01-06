@@ -155,6 +155,9 @@ const uint8_t* JsonHolder::operator()(gandiva::ExecutionContext* ctx, const std:
   error_code error;
   try {
     auto raw_res = doc.at_pointer(formatted_json_path);
+    if (raw_res.error() == error_code::NO_SUCH_FIELD) {
+      return nullptr;
+    }
     error = handle_types(raw_res, &res);
     if (error) {
       return nullptr;
