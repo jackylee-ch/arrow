@@ -40,13 +40,35 @@ error_code handle_types(simdjson_result<ondemand::value> raw_res, std::string* r
  switch (raw_res.type()) {
    case ondemand::json_type::number: {
       std::stringstream ss;
-      double num_res;
-      auto error = raw_res.get_double().get(num_res);
-      if (!error) {
-        ss << num_res;
-        *res = ss.str();
+      switch (raw_res.get_number_type()) {
+        case ondemand::number_type::unsigned_integer: {
+          uint64_t num_res;
+          auto error = raw_res.get_uint64().get(num_res);
+          if (!error) {
+            ss << num_res;
+            *res = ss.str();
+          }
+          return error;
+        }
+        case ondemand::number_type::signed_integer: {
+          int64_t num_res;
+          auto error = raw_res.get_int64().get(num_res);
+          if (!error) {
+            ss << num_res;
+            *res = ss.str();
+          }
+          return error;
+        }
+        case ondemand::number_type::floating_point_number: {
+          double num_res;
+          auto error = raw_res.get_double().get(num_res);
+          if (!error) {
+            ss << num_res;
+            *res = ss.str();
+          }
+          return error;
+        }
       }
-      return error;
     }
    case ondemand::json_type::string: {
      std::string_view res_view;

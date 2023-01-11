@@ -44,6 +44,13 @@ TEST_F(TestJsonHolder, TestJson) {
   const uint8_t* data = get_json_object(&execution_context_, R"({"hello": "3.5"})", "$.hello", &out_len);
   EXPECT_EQ(std::string((char*)data, out_len), "3.5");
 
+  data = get_json_object(&execution_context_, R"({"hello": 292222730})", "$.hello", &out_len);
+  EXPECT_EQ(std::string((char*)data, out_len), "292222730");
+
+  data = get_json_object(&execution_context_, R"({"hello": -292222730})", "$.hello", &out_len);
+  EXPECT_EQ(std::string((char*)data, out_len), "-292222730");
+
+
   // test the case that value is not surrended by double quotes.
   data = get_json_object(&execution_context_, R"({"hello": 3.5})", "$.hello", &out_len);
   EXPECT_EQ(out_len, 3);
