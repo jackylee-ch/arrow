@@ -733,7 +733,13 @@ const char* substr_utf8_int64_int64(gdv_int64 context, const char* input,
     from_glyph = 0;
   }
 
-  if (from_glyph < 0 || from_glyph >= in_glyphs_count) {
+  // Adapt to spark semantic.
+  if (from_glyph < 0) {
+    *out_data_len = in_data_len;
+    return input;
+  }
+
+  if (from_glyph >= in_glyphs_count) {
     *out_data_len = 0;
     return "";
   }

@@ -392,7 +392,7 @@ TEST(TestStringOps, TestSubstring) {
   EXPECT_FALSE(ctx.has_error());
 
   out_str = substr_utf8_int64_int64(ctx_ptr, "asdf", 4, -5, 5, &out_len);
-  EXPECT_EQ(std::string(out_str, out_len), "");
+  EXPECT_EQ(std::string(out_str, out_len), "asdf");
   EXPECT_FALSE(ctx.has_error());
 
   out_str = substr_utf8_int64_int64(ctx_ptr, "अपाचे एरो", 25, 1, 5, &out_len);
