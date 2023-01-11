@@ -17,57 +17,23 @@
 
 #include "gandiva/json_holder.h"
 
+#include <regex>
+
 #include "gandiva/node.h"
+#include "gandiva/regex_util.h"
 #include <sstream>
 
 using namespace simdjson;
 
 namespace gandiva {
 
-static bool IsArrowStringLiteral(arrow::Type::type type) {
-  return type == arrow::Type::STRING || type == arrow::Type::BINARY;
-}
-
 Status JsonHolder::Make(const FunctionNode& node, std::shared_ptr<JsonHolder>* holder) {
-  ARROW_RETURN_IF(node.children().size() != 2,
-                    Status::Invalid("'get_json_object' function requires two parameters"));
-  auto json_path_node = dynamic_cast<LiteralNode*>(node.children().at(1).get());
-  if (json_path_node != nullptr) {
-    auto json_path_node_type = json_path_node->return_type()->id();
-    ARROW_RETURN_IF(!IsArrowStringLiteral(json_path_node_type), Status::Invalid(
-            "'get_json_object' function requires a string literal as the second parameter"));
-    std::string json_path = arrow::util::get<std::string>(json_path_node->holder());
-    return Make(holder, json_path);
-  }
   return Make(holder);
 }
 
 Status JsonHolder::Make(std::shared_ptr<JsonHolder>* holder) {
   *holder = std::shared_ptr<JsonHolder>(new JsonHolder());
   return Status::OK();
-}
-
-Status JsonHolder::Make(std::shared_ptr<JsonHolder>* holder, const std::string& json_path) {
-  *holder = std::shared_ptr<JsonHolder>(new JsonHolder(json_path));
-  return Status::OK();
-}
-
-// Follow spark's format for specifying a field, e.g., "$.a.b".
-void JsonHolder::set_formatted_path(char* formatted_json_path, const std::string &json_path) {
-  int j = 0;
-  for (int i = 0; i < json_path.length(); i++) {
-    if (json_path[i] == '$' || json_path[i] == ']' || json_path[i] == '\'') {
-      continue;
-    } else if (json_path[i] == '[' || json_path[i] == '.') {
-      formatted_json_path[j] = '/';
-      j++;
-    } else {
-      formatted_json_path[j] = json_path[i];
-      j++;
-    }
-  }
-  formatted_json_path[j] = '\0';
-  return;
 }
 
 error_code handle_types(simdjson_result<ondemand::value> raw_res, std::string* res) {
@@ -161,30 +127,34 @@ const uint8_t* JsonHolder::operator()(gandiva::ExecutionContext* ctx, const std:
   //   return nullptr;
   // }
 
+  ondemand::parser parser;
   ondemand::document doc;
   try {
-    doc = parser_->iterate(padded_input);
+    doc = parser.iterate(padded_input);
   } catch (simdjson_error& e) {
     return nullptr;
   }
 
-  char* formatted_json_path;
-  if (formatted_json_path_cached_ != nullptr) {
-    formatted_json_path = formatted_json_path_cached_;
-  } else {
-    formatted_json_path = new char[json_path.length() + 1];
-    set_formatted_path(formatted_json_path, json_path);
+  // Follow spark's format for specifying a field, e.g., "$.a.b".
+  char formatted_json_path[json_path.length() + 1];
+  int j = 0;
+  for (int i = 0; i < json_path.length(); i++) {
+    if (json_path[i] == '$' || json_path[i] == ']' || json_path[i] == '\'') {
+      continue;
+    } else if (json_path[i] == '[' || json_path[i] == '.') {
+      formatted_json_path[j] = '/';
+      j++;
+    } else {
+      formatted_json_path[j] = json_path[i];
+      j++;
+    }
   }
+  formatted_json_path[j] = '\0';
 
   std::string res;
   error_code error;
   try {
     auto raw_res = doc.at_pointer(formatted_json_path);
-    // Free allocated memory for formatted_json_path for not cached case.
-    if (formatted_json_path_cached_ == nullptr) {
-      delete []formatted_json_path;
-      formatted_json_path = nullptr;
-    }
     if (raw_res.error() == error_code::NO_SUCH_FIELD) {
       return nullptr;
     }
