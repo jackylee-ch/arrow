@@ -1906,8 +1906,9 @@ const char* conv(gdv_int64 context, const char* input, gdv_int32 input_len, bool
   }
   *out_len = 64 - i - 1;
   if (*out_len == 0) {
-    *out_valid = false;
-    return "";
+    *out_len = 1;
+    *out_valid = true;
+    return "0";
   }
 
   *out_valid = true;

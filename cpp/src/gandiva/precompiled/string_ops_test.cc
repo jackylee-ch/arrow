@@ -1430,6 +1430,20 @@ TEST(TestStringOps, TestConv) {
   EXPECT_EQ(out_valid, true);
   EXPECT_EQ(out_len, 1);
   EXPECT_EQ(std::string(out_str, out_len), "0");
+
+  // invalid str as input.
+  out_str = conv(ctx_ptr, "this is a test", 14, true, 10, true, 16, true, &out_valid, &out_len);
+  EXPECT_EQ(out_valid, true);
+  EXPECT_EQ(out_len, 1);
+  EXPECT_EQ(std::string(out_str, out_len), "0");
+  out_str = conv(ctx_ptr, "-", 1, true, 10, true, 16, true, &out_valid, &out_len);
+  EXPECT_EQ(out_valid, true);
+  EXPECT_EQ(out_len, 1);
+  EXPECT_EQ(std::string(out_str, out_len), "0");
+  out_str = conv(ctx_ptr, "+", 1, true, 10, true, 16, true, &out_valid, &out_len);
+  EXPECT_EQ(out_valid, true);
+  EXPECT_EQ(out_len, 1);
+  EXPECT_EQ(std::string(out_str, out_len), "0");
 }
 
 TEST(TestStringOps, TestConvPerf) {
