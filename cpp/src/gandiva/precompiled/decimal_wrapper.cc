@@ -52,35 +52,67 @@ void multiply_decimal128_decimal128(int64_t x_high, uint64_t x_low, int32_t x_pr
 }
 
 FORCE_INLINE
-void divide_decimal128_decimal128(int64_t context, int64_t x_high, uint64_t x_low,
-                                  int32_t x_precision, int32_t x_scale, int64_t y_high,
-                                  uint64_t y_low, int32_t y_precision, int32_t y_scale,
+void divide_decimal128_decimal128(int64_t x_high, uint64_t x_low,
+                                  int32_t x_precision, int32_t x_scale, bool x_valid,
+                                  int64_t y_high, uint64_t y_low, int32_t y_precision,
+                                  int32_t y_scale, bool y_valid, bool* out_valid,
                                   int32_t out_precision, int32_t out_scale,
                                   int64_t* out_high, uint64_t* out_low) {
+  if (!x_valid || !y_valid) {
+    *out_valid = false;
+    arrow::BasicDecimal128 out = 0;
+    *out_high = out.high_bits();
+    *out_low = out.low_bits();
+    return;
+  }
   gandiva::BasicDecimalScalar128 x(x_high, x_low, x_precision, x_scale);
   gandiva::BasicDecimalScalar128 y(y_high, y_low, y_precision, y_scale);
   bool overflow;
 
+  if (y.value() == 0) {
+    *out_valid = false;
+    arrow::BasicDecimal128 out = 0;
+    *out_high = out.high_bits();
+    *out_low = out.low_bits();
+    return;
+  }
   // TODO ravindra: generate error on overflows (ARROW-4570).
   arrow::BasicDecimal128 out =
-      gandiva::decimalops::Divide(context, x, y, out_precision, out_scale, &overflow);
+      gandiva::decimalops::Divide(x, y, out_precision, out_scale, &overflow);
+  *out_valid = true;
   *out_high = out.high_bits();
   *out_low = out.low_bits();
 }
 
 FORCE_INLINE
-void mod_decimal128_decimal128(int64_t context, int64_t x_high, uint64_t x_low,
-                               int32_t x_precision, int32_t x_scale, int64_t y_high,
-                               uint64_t y_low, int32_t y_precision, int32_t y_scale,
+void mod_decimal128_decimal128(int64_t x_high, uint64_t x_low,
+                               int32_t x_precision, int32_t x_scale, bool x_valid,
+                               int64_t y_high, uint64_t y_low, int32_t y_precision,
+                               int32_t y_scale, bool y_valid, bool* out_valid,
                                int32_t out_precision, int32_t out_scale,
                                int64_t* out_high, uint64_t* out_low) {
+  if (!x_valid || !y_valid) {
+    *out_valid = false;
+    arrow::BasicDecimal128 out = 0;
+    *out_high = out.high_bits();
+    *out_low = out.low_bits();
+    return;
+  }
   gandiva::BasicDecimalScalar128 x(x_high, x_low, x_precision, x_scale);
   gandiva::BasicDecimalScalar128 y(y_high, y_low, y_precision, y_scale);
   bool overflow;
 
+  if (y.value() == 0) {
+    *out_valid = false;
+    arrow::BasicDecimal128 out = 0;
+    *out_high = out.high_bits();
+    *out_low = out.low_bits();
+    return;
+  }
   // TODO ravindra: generate error on overflows (ARROW-4570).
   arrow::BasicDecimal128 out =
-      gandiva::decimalops::Mod(context, x, y, out_precision, out_scale, &overflow);
+      gandiva::decimalops::Mod(x, y, out_precision, out_scale, &overflow);
+  *out_valid = true;
   *out_high = out.high_bits();
   *out_low = out.low_bits();
 }
